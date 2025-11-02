@@ -18,6 +18,39 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
+          
+      - name: Check for student's article
+        id: check_article
+        run: |
+          # 获取仓库信息
+          REPO_NAME=${{ github.repository }}
+          OWNER=$(echo $REPO_NAME | cut -d'/' -f1)
+          REPO=$(echo $REPO_NAME | cut -d'/' -f2)
+          
+          # 检查是否存在以用户名命名的.md文件
+          ARTICLE_EXISTS=0
+          
+          # 获取仓库内容列表
+          CONTENTS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/$OWNER/$REPO/contents")
+          
+          # 检查是否有以OWNER命名的md文件
+          if echo "$CONTENTS_RESPONSE" | jq -r '.[].name' | grep -q "^$OWNER\.md$"; then
+            ARTICLE_EXISTS=1
+            echo "Found article file: $OWNER.md"
+          else
+            echo "No article file named $OWNER.md found"
+          fi
+          
+          echo "article_exists=$ARTICLE_EXISTS" >> $GITHUB_ENV
+          
+          # 如果文章存在，给20分奖励
+          if [ $ARTICLE_EXISTS -eq 1 ]; then
+            ARTICLE_BONUS=20
+          else
+            ARTICLE_BONUS=0
+          fi
+          echo "article_bonus=$ARTICLE_BONUS" >> $GITHUB_ENV
 
       - name: Calculate score based on GitHub metrics
         id: calculate
@@ -59,8 +92,11 @@ jobs:
           ISSUE_WEIGHT=20
           PR_WEIGHT=30
           
+          # 获取文章奖励分数
+          ARTICLE_BONUS=${{ env.article_bonus }}
+          
           # 计算分数
-          SCORE=$((STARS * STAR_WEIGHT + CLOSED_ISSUES * ISSUE_WEIGHT + PR_COUNT * PR_WEIGHT))
+          SCORE=$((STARS * STAR_WEIGHT + CLOSED_ISSUES * ISSUE_WEIGHT + PR_COUNT * PR_WEIGHT + ARTICLE_BONUS))
           
           # 输出结果
           echo "Stars: $STARS"
@@ -87,6 +123,7 @@ jobs:
           | Stars | \${{ env.stars }} | 10 | \$((\${{ env.stars }} * 10)) |
           | 已解决的Issues | \${{ env.issues }} | 20 | \$((\${{ env.issues }} * 20)) |
           | Pull Requests | \${{ env.prs }} | 30 | \$((\${{ env.prs }} * 30)) |
+          | 个人文章提交 | \${{ env.article_exists }} | 20 | \${{ env.article_bonus }} |
           | **总分** | | | **\${{ env.score }}** |
           
           ## 评分说明
@@ -94,6 +131,7 @@ jobs:
           - Stars: 每个star计10分
           - 已解决的Issues: 每个已解决的issue计20分
           - Pull Requests: 每个PR计30分
+          - 个人文章提交: 提交以自己GitHub用户名命名的.md文章计20分
           
           更新时间: $(date)
           EOF
