@@ -20,7 +20,8 @@ Windows 11 Home
 ### 2.1 无法访问Github以及加载下载过慢
 
 - 修改本地hosts文件
-安装Watt Toolkit加速器from Microsoft Appstore
+
+- 安装Watt Toolkit加速器from Microsoft Appstore
 
 - 安装Dev-sidecar
 https://github.com/docmirror/dev-sidecar/releases/tag/v2.0.0
@@ -39,17 +40,30 @@ https://git-scm.com/book/en/v2/
 
 ## 4. Git命令使用过程总结
 
-### 4.1 新增
+### 4.1 新学的 major operations
 - git config --global user.name/user email: 配置用户并和email
 - cd：定位到要操作的目录，操作成功后地址后会出现（master）
 - git init: 创造.git文件，记录库文件的版本变化
-- git branc -a： 查看本地及远程所有分支
 - git status: 查看仓库改动后的状态，全局
 - git diff: 比较仓库改动后的状态，局部
-- git commit -m “text”： 提交文件和text到本地仓库，无需打开编辑器
 - git rm: git add的reversal
+- git branch： 查看本地分支
+- git checkout / git switch: 切换分支
+- git checkout -- / git restore：恢复文件
+- git log: 查看提交记录
 
-### 4.2 原有
+### 4.2 新学的 variations of major operations
+- git commit -m “text”： 提交文件和text到本地仓库，无需打开编辑器
+- git branch -a: 查看本地远程所有分支
+- git add .: 增加所有改变到暂存区
+- git show HEAD: 查看最新提交的详细信息
+- git log -1 HEAD: 查看head现在关联哪个分支/提交
+- git checkout HEAD~1： 查看旧版本（detached HEAD模式，不可更改）
+- git checkout main: 回到最新main分支（reattached HEAD，可更改）
+- git reset HEAD( .): 取消（全部）文件暂存
+- git diff HEAD origin/main: 比较远程和本地分支
+
+### 4.3 模板上的
 （在此处总结使用Git命令的过程，包括但不限于以下操作：
 - git clone: 克隆远程仓库到本地
 - git add: 添加文件到暂存区
